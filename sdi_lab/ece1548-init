@@ -1,0 +1,63 @@
+#!/bin/bash -f
+# Create a ssh key if there is no key in the .ssh directory
+# Set an option in a local file
+# Get an option from an INI file
+# iniget config-file section option
+source /home/savitb/bin/functions
+USER="$(whoami)"
+KEY_NAME="$USER"key
+SECGROUP_NAME=$USER
+HOST_VM1="$USER"-vm1
+HOST_VM2="$USER"-vm2
+HOST_VM3="$USER"-vm3
+RC_VM1=$HOME/rc.local.vm1
+RC_VM2=$HOME/rc.local.vm2
+RC_VM3=$HOME/rc.local.vm3
+
+blue_desc_title "  Initializing all settings for ($USER)"
+
+green_desc_title "1. Creating a keypair ($KEY_NAME) ..."
+if [[ ! -f $HOME/.ssh/id_rsa.pub ]]; then
+    command_desc "ssh-keygen -t rsa"
+    echo -e "\n" | ssh-keygen -t rsa -N ""
+fi
+AUTH_KEY=$(cat ~/.ssh/id_rsa.pub)
+
+green_desc_title "2. Importing the keypair($KEY_NAME) to SAVI Testbed ..."
+command_desc "nova keypair-add --pub_key $HOME/.ssh/id_rsa.pub $KEY_NAME"
+nova keypair-add --pub_key $HOME/.ssh/id_rsa.pub $KEY_NAME
+
+green_desc_title "3. Creating a security group ($SECGROUP_NAME) ..."
+command_desc "nova secgroup-create $SECGROUP_NAME \"$SECGROUP_NAME secgroup\""
+nova secgroup-create $SECGROUP_NAME "$SECGROUP_NAME secgroup"
+
+green_desc_title "4. Adding rules (SSH, PING, and OPENFLOW) to the ($SECGROUP_NAME) ..."
+command_desc "nova secgroup-add-rule $SECGROUP_NAME TCP 22 22 0.0.0.0/0"
+nova secgroup-add-rule $SECGROUP_NAME TCP 22 22 0.0.0.0/0
+command_desc "nova secgroup-add-rule $SECGROUP_NAME ICMP -1 255 0.0.0.0/0"
+nova secgroup-add-rule $SECGROUP_NAME ICMP -1 255 0.0.0.0/0
+command_desc "nova secgroup-add-rule $SECGROUP_NAME TCP 6633 6633 0.0.0.0/0"
+nova secgroup-add-rule $SECGROUP_NAME TCP 6633 6633 0.0.0.0/0
+
+green_desc_title "5. Creating interfaces file ..."
+cp -f /home/savitb/bin/interfaces $HOME
+
+green_desc_title "6. Creating rc.local ..."
+echo -e "#!/bin/sh -e" >> $RC_VM1
+echo -e "service networking restart" >> $RC_VM1
+echo -e "HOST=$HOST_VM1" >> $RC_VM1
+echo -e "AUTH_KEY=\"$AUTH_KEY\"" >> $RC_VM1
+cat /home/savitb/bin/rc.local.sc >> $RC_VM1
+echo -e "#!/bin/sh -e" >> $RC_VM2
+echo -e "service networking restart" >> $RC_VM2
+echo -e "HOST=$HOST_VM2" >> $RC_VM2
+echo -e "AUTH_KEY=\"$AUTH_KEY\"" >> $RC_VM2
+cat /home/savitb/bin/rc.local.sc >> $RC_VM2
+echo -e "#!/bin/sh -e" >> $RC_VM3
+echo -e "service networking restart" >> $RC_VM3
+echo -e "HOST=$HOST_VM3" >> $RC_VM3
+echo -e "AUTH_KEY=\"$AUTH_KEY\"" >> $RC_VM3
+cat /home/savitb/bin/rc.local.sc >> $RC_VM3
+
+echo ""
+blue_desc "Initialization completed."

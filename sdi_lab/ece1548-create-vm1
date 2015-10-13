@@ -1,0 +1,23 @@
+#!/bin/bash -f
+source /home/savitb/bin/functions
+USER=$(whoami)
+KEY_NAME="$USER"key
+SECGROUP_NAME=$USER
+VM="$USER"-vm1
+PROJECT_NAME=$OS_TENANT_NAME
+MAIN_NETWORK="$PROJECT_NAME"-net
+PRIVATE_NETWORK="$USER"-net
+blue_desc_title "  Creating a $VM for ($USER)"
+green_desc_title "Creating a $VM in $MAIN_NETWORK and $PRIVATE_NETWORK"
+
+command_desc "quantum net-list"
+NET_ID_MAIN=`quantum net-list -c id -c name | grep $MAIN_NETWORK | awk '{print $2}'`
+NET_ID_PRIVATE=`quantum net-list -c id -c name | grep $PRIVATE_NETWORK | awk '{print $2}'`
+echo "NET_ID_MAIN=$NET_ID_MAIN"
+echo "NET_ID_PRIVATE=$NET_ID_PRIVATE"
+
+command_desc "nova boot --file /home/ubuntu/id_rsa=$HOME/.ssh/id_rsa --file /etc/network/interfaces=$HOME/interfaces --file /etc/rc.local=$HOME/rc.local.vm2 --flavor m1.small --image ECE1548.SDILab --security_groups $SECGROUP_NAME --nic net-id=$NET_ID_MAIN --nic net-id=$NET_ID_PRIVATE $VM"
+nova boot --file /home/ubuntu/id_rsa=$HOME/.ssh/id_rsa --file /etc/network/interfaces=$HOME/interfaces --file /etc/rc.local=$HOME/rc.local.vm1 --flavor m1.small --image ECE1548.SDILab --security_groups $SECGROUP_NAME --nic net-id=$NET_ID_MAIN --nic net-id=$NET_ID_PRIVATE $VM
+yellow_desc "nova list"
+nova list
+

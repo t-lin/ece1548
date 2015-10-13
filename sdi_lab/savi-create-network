@@ -1,0 +1,35 @@
+#!/bin/bash -f
+# One arguments expected:
+#    1. IP RANGE in a CIDR-FORMAT
+#
+source /home/savitb/bin/functions
+if [[ -n "$1" ]]; then
+   IP_RANGE=$1
+else
+   echo "Must specify IP range of your subnet in CIDR format)"
+   echo "For example, 100.100.100.10/24"
+   exit 1
+fi
+
+USER=$(whoami)
+blue_desc_title "  Creating a Private and sub network for ($USER)"
+command_desc "keystone token-get"
+TENANT_ID=`keystone token-get | grep tenant_id | awk '{print $4 }'`
+echo "TENANT_ID=$TENANT_ID"
+PRIVATE_NETWORK="$USER"-net
+SUB_NETWORK="$USER"-subnet
+DNS_NAME_SERVER=8.8.8.8
+
+green_desc_title "1. Creating a Private and sub network ($PRIVATE_NETWORK) in tenant ($TENANT_ID)"
+command_desc "quantum net-create --tenant_id $TENANT_ID $PRIVATE_NETWORK"
+quantum net-create --tenant_id $TENANT_ID $PRIVATE_NETWORK
+command_desc "quantum net-list"
+quantum net-list
+
+NET_ID=`quantum net-list -c id -c name | grep $PRIVATE_NETWORK | awk '{print $2}'`
+echo "NET_ID=$NET_ID"
+green_desc_title "2. Creating a subnet ($SUB_NETWORK) for ($PRIVATE_NETWORK) in tenant ($TENANT_ID)"
+command_desc "quantum subnet-create --tenant_id $TENANT_ID --ip_version 4 --no-gateway --name $SUB_NETWORK $NET_ID $IP_RANGE --dns_nameservers list=true $DNS_NAME_SERVER"
+quantum subnet-create --tenant_id $TENANT_ID --ip_version 4 --no-gateway --name $SUB_NETWORK $NET_ID $IP_RANGE --dns_nameservers list=true $DNS_NAME_SERVER
+yellow_desc "quantum subnet-list"
+quantum subnet-list

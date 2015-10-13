@@ -1,0 +1,21 @@
+#!/bin/sh -e
+service networking restart
+HOST=thomas-vm3
+AUTH_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEOzQJDzubFz6ZA0yJFVfaPhRJZRkpWJ+eFzGRJiI3Gf/BwABLDdYyzWMWwA9LGwfEBg7qaDbLoxm0ikgaCzBEwXd0pW2fqYOeyyK5TF1ypveidzop/47wWOEVEmGWY/xxHha0OA2WeZc/+GsuKB+7SwMtqQXA/B1+s+6pFUhasXREv4MVpwDJYC3mtaE+65LbhbsEIhIWhc3Tm3O82vntURlxn5gy0LuTmu4MQvSnDn9gDB4Nn8UT/1VhyJqL21/EESnJuxZb4cui1oy8eFfs/UIg9caYZCOw7VwkC/zSpwN7JEXMn3cEV4cGfh3QExjTiIT+bNrj9dxyblvfks7d thomas@savi-client"
+if [ ! -f /etc/configdone ]; then
+        echo start configuring
+        mkdir -p /etc/old-cloudinit
+        mv /etc/init/cloud* /etc/old-cloudinit/
+        echo $HOST > /etc/hostname
+        hostname $HOST
+        echo "127.0.0.1 $HOST" >> /etc/hosts
+        dpkg-reconfigure openssh-server
+        locale-gen en_CA.UTF-8
+        sudo locale-gen en_CA.UTF-8
+        mkdir -p home/ubuntu/.ssh
+        echo $AUTH_KEY >> /home/ubuntu/.ssh/authorized_keys
+        echo $AUTH_KEY >> /home/ubuntu/.ssh/id_rsa.pub
+        mv /home/ubuntu/id_rsa /home/ubuntu/.ssh/id_rsa >/dev/null || :
+        touch /etc/configdone
+fi
+exit 0

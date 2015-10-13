@@ -1,0 +1,57 @@
+#!/bin/bash -f
+# Launch wordpress stack using the wordpress HOT template
+# Blue for describing high level script purpose
+# Green for describing individual steps
+# Yellow (command_desc) for actual commands
+source /home/savitb/bin/functions
+
+USER=$(whoami)
+KEY_NAME="$USER"key
+KEY_NAME=`echo $KEY_NAME | sed 's/\.//g'`
+SECGROUP_NAME=$USER
+VM="$USER"-vm1
+PROJECT_NAME=$OS_TENANT_NAME
+EXT_NET_ID=`neutron net-list | grep ext_net | awk '{print $2}'`
+
+# Script description
+blue_desc "Sentences in BLUE describe what we are trying to achieve (may involve multiple steps)"
+green_desc "Sentences in GREEN relate the step we are currently on"
+yellow_desc "Sentences in YELLOW are the commands being run"
+echo
+
+# FIRST PART: Identify parameters for creating the stack
+blue_desc_title "  Identifying the required parameters (in this case, key-pair and external network ID)"
+
+green_desc_title "List existing key-pairs"
+command_desc "nova keypair-list"
+nova keypair-list
+green_desc "Identified keypair name: $KEY_NAME"
+
+green_desc_title "List available networks: Need the external network ID for floating IPs"
+command_desc "neutron net-list"
+neutron net-list
+green_desc "Identified extrenal network ID: $EXT_NET_ID"
+
+echo
+echo
+
+# SECOND PART: Now create the stack
+blue_desc_title "  Creating a wordpress deployment for ($USER)"
+
+#green_desc_title "1. Downloading the wordpress.yaml file into your home directory ($HOME)"
+#command_desc "wget https://raw.githubusercontent.com/savi-dev/heat_workshop/master/wordpress/wordpress.yaml"
+#wget https://raw.githubusercontent.com/savi-dev/ws15/master/heat/wordpress.yaml
+
+green_desc_title "Launching new stack based on the wordpress file, and specifying the user's key-pair"
+command_desc "heat stack-create $USER-stack -f wordpress.yaml -P \"key_name=$KEY_NAME;floating_net_id=$EXT_NET_ID\""
+heat stack-create $USER-stack -f wordpress.yaml -P "key_name=$KEY_NAME;floating_net_id=$EXT_NET_ID"
+
+green_desc_title "Checking the status of stack (if not completed, repeat the command to check again)"
+command_desc "heat stack-list"
+heat stack-list
+
+green_desc_title "Alternatively, you can verify the VMs in the stack are being spawned via 'nova list'"
+command_desc "nova list"
+nova list
+
+

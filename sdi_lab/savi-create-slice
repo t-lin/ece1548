@@ -1,0 +1,17 @@
+#!/bin/bash -f
+source /home/savitb/bin/functions
+if [[ -n "$1" ]]; then
+   FLOATING_IP=$1
+else
+   echo "Must specify first parameter (Floating IP address)"
+   exit 1
+fi
+
+USER=$(whoami)
+SLICE="$USER"-slice
+blue_desc_title "  Creating a slice ($SLICE) for ($USER)"
+command_desc "janus fv-createslice --slicename $SLICE --ip $FLOATING_IP --port 6633"
+janus fv-createslice --slicename $SLICE --ip $FLOATING_IP --port 6633
+yellow_desc "janus fv-listslices"
+janus fv-listslices
+

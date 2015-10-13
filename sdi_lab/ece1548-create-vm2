@@ -1,0 +1,17 @@
+#!/bin/bash -f
+source /home/savitb/bin/functions
+USER=$(whoami)
+KEY_NAME="$USER"key
+SECGROUP_NAME=$USER
+VM="$USER"-vm2
+PRIVATE_NETWORK="$USER"-net
+blue_desc_title "  Creating a $VM for ($USER)"
+green_desc_title "Creating a $VM in $PRIVATE_NETWORK"
+command_desc "quantum net-list"
+NET_ID_PRIVATE=`quantum net-list -c id -c name | grep $PRIVATE_NETWORK | awk '{print $2}'`
+echo "NET_ID_PRIVATE=$NET_ID_PRIVATE"
+
+command_desc "nova boot --file /home/ubuntu/id_rsa=$HOME/.ssh/id_rsa --file /etc/rc.local=$HOME/rc.local.vm3 --flavor m1.small --image Ubuntu64.2.1 --security_groups $SECGROUP_NAME --nic net-id=$NET_ID_PRIVATE $VM"
+nova boot --file /home/ubuntu/id_rsa=$HOME/.ssh/id_rsa --file /etc/rc.local=$HOME/rc.local.vm2 --flavor m1.small --image Ubuntu64.2.1 --security_groups $SECGROUP_NAME --nic net-id=$NET_ID_PRIVATE $VM
+yellow_desc "nova list"
+nova list

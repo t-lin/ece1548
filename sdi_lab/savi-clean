@@ -1,0 +1,84 @@
+#!/bin/bash -f
+source /home/savitb/bin/functions
+USER=$(whoami)
+KEY_NAME="$USER"key
+KEY_NAME=`echo $KEY_NAME | sed 's/\.//g'`
+SECGROUP_NAME=$USER
+VM1="$USER"-vm1
+VM2="$USER"-vm2
+VM3="$USER"-vm3
+MAIN_NETWORK="$OS_TENANT_NAME"-net
+PRIVATE_NETWORK="$USER"-net
+SUB_NETWORK="$USER"-subnet
+NET_ID_PRIVATE=`quantum net-list -c id -c name | grep $PRIVATE_NETWORK | awk '{print $2}'`
+NET_ID_SUB=`quantum subnet-list -c id -c name | grep $SUB_NETWORK | awk '{print $2}'`
+SLICE="$USER"-slice
+
+VM1_IPNET=`nova list | grep $VM1 | awk '{print $8}'`
+VM1_IP=${VM1_IPNET#$MAIN_NETWORK=}
+VM1_FLOATINGIP=`quantum floatingip-list | grep $VM1_IP | awk '{print $6}'`
+
+blue_desc_title "Cleaning all tasks"
+
+#green_desc_title "  Releasing a ($PRIVATE_NETWORK) for ($USER)"
+#yellow_desc "janus fv-unassignnetwork --network_id $NET_ID_PRIVATE"
+#janus fv-unassignnetwork --network_id $NET_ID_PRIVATE
+
+#sleep 5;
+
+#green_desc_title "  Deleting a slice ($SLICE) for ($USER)"
+#yellow_desc "janus fv-deleteslice --slicename $SLICE"
+#janus fv-deleteslice --slicename $SLICE
+
+green_desc_title "  Cleaning all VMs for ($USER)"
+FLOATING_IP_ID=`quantum floatingip-list | grep "$VM1_FLOATINGIP" | awk '{print $2}'`
+yellow_desc "quantum floatingip-disassociate $FLOATING_IP_ID"
+quantum floatingip-disassociate $FLOATING_IP_ID
+yellow_desc "quantum floatingip-delete $FLOATING_IP_ID"
+quantum floatingip-delete $FLOATING_IP_ID
+echo "Deleting all VMs..."
+yellow_desc "nova delete $VM1"
+nova delete $VM1
+yellow_desc "nova delete $VM2"
+nova delete $VM2
+yellow_desc "nova delete $VM3"
+nova delete $VM3
+sleep 20;
+
+green_desc_title "  Cleaning all networks for ($USER)"
+echo "Deleting all networks"
+yellow_desc "quantum subnet-delete $NET_ID_SUB"
+quantum subnet-delete $NET_ID_SUB
+sleep 10 
+yellow_desc "quantum net-delete $NET_ID_PRIVATE"
+quantum net-delete $NET_ID_PRIVATE
+
+green_desc_title "  Cleaning all settings for ($USER)"
+
+echo "1. Removing a keypair ($KEY_NAME) ..."
+yellow_desc "rm -rf $HOME/.ssh"
+rm -rf $HOME/.ssh
+
+echo "2. Removing the keypair($KEY_NAME) from SAVI Testbed ..."
+yellow_desc "nova keypair-delete $KEY_NAME"
+nova keypair-delete $KEY_NAME
+
+sleep 10
+echo "3. Removing a securty group ($SECGROUP_NAME) ..."
+yellow_desc "nova secgroup-delete $SECGROUP_NAME"
+nova secgroup-delete $SECGROUP_NAME
+
+echo "4. Removing interfaces file ..."
+yellow_desc "rm -f $HOME/interfaces"
+rm -f $HOME/interfaces
+
+echo "5. Removing rc.local ..."
+yellow_desc "rm -f $HOME/rc.local.vm1"
+yellow_desc "rm -f $HOME/rc.local.vm2"
+yellow_desc "rm -f $HOME/rc.local.vm3"
+rm -f $HOME/rc.local.vm1
+rm -f $HOME/rc.local.vm2
+rm -f $HOME/rc.local.vm3
+
+echo ""
+blue_desc "Cleaning completed."

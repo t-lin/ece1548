@@ -66,6 +66,7 @@ resources:
           flavor: { get_param: flavor }
           security_groups:
             - default
+          # See comment block at bottom regarding metadata
           metadata: {"metering.stack": {get_param: "OS::stack_id"}}
           user_data: |
             #!/bin/bash -x
@@ -102,6 +103,7 @@ resources:
       threshold: 30
       alarm_actions:
         - {get_attr: [scale_up_policy, alarm_url]}
+      # See comment block at bottom regarding metadata
       matching_metadata: {'metadata.user_metadata.stack': {get_param: "OS::stack_id"}}
       comparison_operator: gt
 
@@ -116,6 +118,7 @@ resources:
       threshold: 10
       alarm_actions:
         - {get_attr: [scale_down_policy, alarm_url]}
+      # See comment block at bottom regarding metadata
       matching_metadata: {'metadata.user_metadata.stack': {get_param: "OS::stack_id"}}
       comparison_operator: lt
 

@@ -24,10 +24,7 @@ parameters:
   image_id:
     type: string
     description: >
-      Name or ID of the image to use for the WordPress server.
-      Recommended values are fedora-20.i386 or fedora-20.x86_64;
-      get them from http://cloud.fedoraproject.org/fedora-20.i386.qcow2
-      or http://cloud.fedoraproject.org/fedora-20.x86_64.qcow2 .
+      Name or ID of the image to use for the servers.
     default: ECE1548.OFLab
 
   net_uuid:
@@ -63,7 +60,10 @@ parameters:
 
   subnet_cidr:
     type: string
-    description: CIDR for the private network's subnet
+    description: >
+      IP address range for the private network's subnet, specified using
+      CIDR notation. Please ensure this does not conflict with existing
+      subnet IP ranges (type neutron subnet-list to view existing ranges).
     constraints:
       - allowed_pattern: '[0-9\./]*'
         description: CIDR should be specified in dots and numbers (and a single backslash)

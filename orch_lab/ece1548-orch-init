@@ -44,9 +44,10 @@ fi
 #command_desc "nova secgroup-create $SECGROUP_NAME \"$SECGROUP_NAME secgroup\""
 #nova secgroup-create $SECGROUP_NAME "$SECGROUP_NAME secgroup"
 
-green_desc_title "4. Adding rules to enable SSH and ICMP to the ($SECGROUP_NAME) ..."
-SSH_RULE=`nova secgroup-list-rules thomas | grep -i tcp | grep 22`
-ICMP_RULE=`nova secgroup-list-rules thomas | grep -i icmp | grep 255`
+green_desc_title "4. Adding rules to enable SSH, ICMP, and HTTP to ($SECGROUP_NAME) ..."
+SSH_RULE=`nova secgroup-list-rules $SECGROUP_NAME | grep -i tcp | grep 22`
+ICMP_RULE=`nova secgroup-list-rules $SECGROUP_NAME | grep -i icmp | grep 255`
+HTTP_RULE=`nova secgroup-list-rules $SECGROUP_NAME | grep -i tcp | grep 80`
 command_desc "nova secgroup-add-rule $SECGROUP_NAME TCP 22 22 0.0.0.0/0"
 if [[ -z "$SSH_RULE" ]]; then
     nova secgroup-add-rule $SECGROUP_NAME TCP 22 22 0.0.0.0/0
@@ -55,9 +56,13 @@ command_desc "nova secgroup-add-rule $SECGROUP_NAME ICMP -1 255 0.0.0.0/0"
 if [[ -z "$ICMP_RULE" ]]; then
     nova secgroup-add-rule $SECGROUP_NAME ICMP -1 255 0.0.0.0/0
 fi
+command_desc "nova secgroup-add-rule $SECGROUP_NAME TCP 80 80 0.0.0.0/0"
+if [[ -z "$HTTP_RULE" ]]; then
+    nova secgroup-add-rule $SECGROUP_NAME TCP 80 80 0.0.0.0/0
+fi
 
 green_desc_title "5. Creating Heat template file for deploying Wordpress ..."
-cp -f /home/savitb/thomas/ece1548/heat_lab/wordpress.yaml ~
+cp -f /home/savitb/thomas/ece1548/orch_lab/wordpress.yaml ~
 green_desc "Created file 'wordpress.yaml' in the home directory ($HOME/wordpress.yaml)"
 
 echo ""

@@ -1,0 +1,181 @@
+heat_template_version: 2013-05-23
+
+description: >
+  An example Heat Orchestration Template (HOT).
+  WordPress is web software you can use to create a beautiful website
+  or blog. This template installs two instances: one running a
+  WordPress deployment and the other using a local MySQL database to
+  store the data.
+
+parameters:
+
+  key_name:
+    type: string
+    description : Name of a KeyPair to enable SSH access to the instance
+
+  instance_type:
+    type: string
+    description: Instance type for web and DB servers
+    default: m1.small
+    constraints:
+      - allowed_values: [m1.tiny, m1.small, m1.medium, m1.large, m1.xlarge]
+        description: instance_type must be a valid instance type
+
+  image_id:
+    type: string
+    description: >
+      Name or ID of the image to use for the WordPress server.
+      Recommended values are fedora-20.i386 or fedora-20.x86_64;
+      get them from http://cloud.fedoraproject.org/fedora-20.i386.qcow2
+      or http://cloud.fedoraproject.org/fedora-20.x86_64.qcow2 .
+    default: ECE1548.OFLab
+
+  net_uuid:
+    type: string
+    description: Network UUID to attach instance to
+    #hidden: true
+    constraints:
+      - length: { min: 36, max: 36 }
+        description: Network UUID's must be 36 characters long (including dashes)
+      - allowed_pattern: '[a-f0-9\-]*'
+        description: Network UUID's must be composed of hexadecimals and dashes
+
+  username:
+    type: string
+    description: The username
+    #constraints:
+    #  - allowed_pattern: '[a-f0-9\.\-]*'
+    #    description: Username must be composed of hexadecimals, dots, and dashes
+
+  tenant_id:
+    type: string
+    description: >
+      The tenant/project ID
+    constraints:
+      - length: { min: 32, max: 32 }
+        description: Network UUID's must be 32 characters long (including dashes)
+      - allowed_pattern: '[a-f0-9]*'
+        description: Tenant ID's must be composed of hexadecimals
+
+  subnet_cidr:
+    type: string
+    description: CIDR for the private network's subnet
+    constraints:
+      - allowed_pattern: '[0-9\./]*'
+        description: CIDR should be specified in dots and numbers (and a single backslash)
+
+
+resources:
+  VM1Serv:
+    type: OS::Nova::Server
+    properties:
+      name: # The name field expects a string, we can use str_replace for dynamic strings
+        str_replace:
+          template: username-VM1
+          params:
+            username: { get_param: username }
+      image: { get_param: image_id }
+      flavor: { get_param: instance_type }
+      key_name: { get_param: key_name }
+      networks:
+        - network: { get_param: net_uuid }
+        - network: { get_resource: userNet }
+
+      # This section specifies a script that the VM will download from the cloud metadata server, and run at boot time
+      # Can use str_replace to create more dynamic scripts
+      user_data: |
+        #!/bin/bash
+
+        # Updates network interfaces file to bring up second interface
+        cat <<EOF >>/etc/network/interfaces
+
+        auto eth1
+        iface eth1 inet dhcp
+        EOF
+
+        # Restart networking
+        service networking restart
+
+        # Set up NAT (enable IP forwarding and IP masquerading)
+        # YOU DO THIS PART
+
+  VM2Serv:
+    type: OS::Nova::Server
+    properties:
+      name: 
+        # The name field expects a string, we can use str_replace for dynamic strings
+        str_replace:
+          template: username-VM2
+          params:
+            username: { get_param: username }
+      image: { get_param: image_id }
+      flavor: { get_param: instance_type }
+      key_name: { get_param: key_name }
+      networks:
+        - network: { get_resource: userNet }
+
+      # This injects a file into the VM filesystem prior to boot
+      # We need this as this VM will not have access to the cloud metadata server in a private network
+      # We specify target file location and the file content, and use str_replace for dynamic content
+      personality:
+        # Here we use str_replace for dynamic scripting
+        /etc/rc.local:
+          str_replace:
+            template: |
+              #!/bin/bash
+
+              # Move cloud-init files since this VM won't have access to metadata server by default
+              # Could just make a new image without it but meh...
+              mkdir -p /etc/old-cloudinit
+              mv /etc/init/cloud* /etc/old-cloudinit/
+
+              # Configure hostname
+              echo username-VM2 > /etc/hostname
+              hostname username-VM2
+              echo "127.0.0.1 username-VM2" >> /etc/hosts
+
+              # Configure SSH server
+              dpkg-reconfigure openssh-server
+              locale-gen en_CA.UTF-8
+
+              # Add default route
+              # YOU DO THIS PART
+
+            params:
+              username: { get_param: username }
+              defaultgwip: { get_attr: [ VM1Serv, networks, { get_attr: [ userNet, name] }, 0] }
+
+  userNet:
+    type: OS::Neutron::Net
+    properties:
+      # YOU DO THIS PART (we've already filled in the name for you)
+      # The equivalent command line for this part would be:
+      #   neutron net-create --tenant_id {tenant id} {network name}
+      name:
+        # The name field expects a string, we can use str_replace for dynamic strings
+        str_replace:
+          template: username-net
+          params:
+            username: { get_param: username }
+
+  userSubnet:
+    type: OS::Neutron::Subnet
+    properties:
+      # YOU DO THIS PART (we've already filled in the name for you)
+      # The equivalent command line for this part would be:
+      #   neutron subnet-create --tenant_id {tenant id} --ip_version 4 --no-gateway --name {subnet name} {network id (from above)} {cidr range} --dns_nameservers list=true 8.8.8.8
+      name:
+        str_replace:
+          template: username-subnet
+          params:
+            username: { get_param: username }
+
+
+outputs:
+  WebsiteURL:
+    description: URL for Wordpress wiki
+    value:
+      str_replace:
+        template: http://host
+        params:
+          host: { get_attr: [VM1Serv, first_address] }

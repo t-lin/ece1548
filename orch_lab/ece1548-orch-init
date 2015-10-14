@@ -61,9 +61,11 @@ if [[ -z "$HTTP_RULE" ]]; then
     nova secgroup-add-rule $SECGROUP_NAME TCP 80 80 0.0.0.0/0
 fi
 
-green_desc_title "5. Creating Heat template file for deploying Wordpress ..."
+green_desc_title "5. Creating Heat template files related to this lab ..."
 cp -f /home/savitb/thomas/ece1548/orch_lab/wordpress.yaml ~
 green_desc "Created file 'wordpress.yaml' in the home directory ($HOME/wordpress.yaml)"
+cp -f /home/savitb/thomas/ece1548/orch_lab/private_net_nat.yaml ~
+green_desc "Created file 'private_net_nat.yaml' in the home directory ($HOME/private_net_nat.yaml)"
 
 echo ""
 blue_desc "Initialization completed."

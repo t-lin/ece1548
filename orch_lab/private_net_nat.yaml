@@ -32,8 +32,10 @@ parameters:
 
   net_uuid:
     type: string
-    description: Network UUID to attach instance to
+    description: Network UUID of the main network (network with internet access)
     #hidden: true
+    # Set default value to UUID of the ece1548-net (in EDGE-TR-1)
+    default: dacb9d71-6345-4fe1-8faf-9748322b6825
     constraints:
       - length: { min: 36, max: 36 }
         description: Network UUID's must be 36 characters long (including dashes)
@@ -51,6 +53,8 @@ parameters:
     type: string
     description: >
       The tenant/project ID
+    # Set default value to UUID of ece1548 tenant
+    default: f9deb78cc04b46f899d5c95820d85de1
     constraints:
       - length: { min: 32, max: 32 }
         description: Network UUID's must be 32 characters long (including dashes)

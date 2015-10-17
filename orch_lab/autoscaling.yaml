@@ -66,6 +66,8 @@ resources:
           flavor: { get_param: flavor }
           security_groups:
             - default
+          networks:
+            - network: ece1548-net
           # See comment block at bottom regarding metadata
           metadata: {"metering.stack": {get_param: "OS::stack_id"}}
           user_data: |

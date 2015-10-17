@@ -177,7 +177,7 @@ resources:
 
 outputs:
   WebsiteURL:
-    description: URL for Wordpress wiki
+    description: URL for VM1
     value:
       str_replace:
         template: http://host

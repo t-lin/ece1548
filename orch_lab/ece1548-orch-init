@@ -65,6 +65,8 @@ green_desc_title "5. Creating Heat template files related to this lab ..."
 cp -f /home/savitb/thomas/ece1548/orch_lab/wordpress.yaml ~
 green_desc "Created file 'wordpress.yaml' in the home directory ($HOME/wordpress.yaml)"
 cp -f /home/savitb/thomas/ece1548/orch_lab/private_net_nat.yaml ~
+chmod o-r ~/private_net_nat.yaml
+chmod g-r ~/private_net_nat.yaml
 green_desc "Created file 'private_net_nat.yaml' in the home directory ($HOME/private_net_nat.yaml)"
 
 echo ""

@@ -2,10 +2,11 @@ heat_template_version: 2013-05-23
 
 description: >
   An example Heat Orchestration Template (HOT).
-  WordPress is web software you can use to create a beautiful website
-  or blog. This template installs two instances: one running a
-  WordPress deployment and the other using a local MySQL database to
-  store the data.
+  This template creates a private network and creates two instances.
+  The first instances has an interface on both the main network as
+  well as the private network. The second instance only has an
+  interface on the private network.
+  Parts of the template have been removed for the user to fill in.
 
 parameters:
 
@@ -167,7 +168,7 @@ resources:
     properties:
       # YOU DO THIS PART (we've already filled in the name for you)
       # The equivalent command line for this part would be:
-      #   neutron subnet-create --tenant_id {tenant id} --ip_version 4 --no-gateway --name {subnet name} {network id (from above)} {cidr range} --dns_nameservers list=true 8.8.8.8
+      #   neutron subnet-create --tenant_id {tenant id} --ip_version 4 --no-gateway --name {subnet name} {network id (your network)} {cidr range} --dns_nameservers list=true 8.8.8.8
       name:
         str_replace:
           template: username-subnet
@@ -176,7 +177,7 @@ resources:
 
 
 outputs:
-  WebsiteURL:
+  VM1URL:
     description: URL for VM1
     value:
       str_replace:

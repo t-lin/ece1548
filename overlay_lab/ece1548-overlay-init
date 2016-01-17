@@ -80,6 +80,12 @@ green_desc "Created file 'vino_cleanup' in the home directory ($HOME/vino_cleanu
 chmod 755 $HOME/vino
 chmod 755 $HOME/vino_cleanup
 
+# Don't allow others to read topology2.py and config2.py files
+chmod o-r $HOME/topology2.py
+chmod g-r $HOME/topology2.py
+chmod o-r $HOME/config2.py
+chmod g-r $HOME/config2.py
+
 # Configure config file
 sed -i "s/username=/username=\'${OS_USERNAME}\'/g" $HOME/config2.py
 sed -i "s/password=/password=\'${OS_PASSWORD}\'/g" $HOME/config2.py

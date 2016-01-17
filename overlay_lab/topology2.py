@@ -18,15 +18,15 @@ topology['switch number'] = [ ( 'host number' , 'internal port addr' , 'bridge_n
 contr_addr = '10.2.0.19:6633'
 
 switches = {}
-switches["sw1"] = {'contr_addr': contr_addr, 'region':'CORE', 'flavor': 'm1.small', 'bridge_name': 'sw1_br', 'int_ip':('p1', '192.168.200.18')}
-switches["sw2"] = {'contr_addr': contr_addr, 'region':'CORE', 'flavor': 'm1.small'}
-switches["sw3"] = {'contr_addr': contr_addr, 'region':'CORE', 'flavor': 'm1.small', 'bridge_name': 'sw3_br'}
+switches["sw1"] = {'contr_addr': contr_addr, 'region': 'CORE', 'flavor': 'm1.small', 'bridge_name': 'sw1_br', 'int_ip': ('p1', '192.168.200.18')}
+switches["sw2"] = {'contr_addr': contr_addr, 'region': 'CORE', 'flavor': 'm1.small'}
+switches["sw3"] = {'contr_addr': contr_addr, 'region': 'CORE', 'flavor': 'm1.small', 'bridge_name': 'sw3_br'}
 
 hosts = {}
-hosts["h1"] = {'region':'CORE', 'flavor': 'm1.small'}
-hosts["h2"] = {'region':'CORE', 'flavor': 'm1.small'}
-hosts["h3"] = {'region':'CORE', 'flavor': 'm1.small'}
-hosts["h4"] = {'region':'CORE', 'flavor': 'm1.small'}
+hosts["h1"] = {'region': 'CORE', 'flavor': 'm1.small'}
+hosts["h2"] = {'region': 'CORE', 'flavor': 'm1.small'}
+hosts["h3"] = {'region': 'CORE', 'flavor': 'm1.small'}
+hosts["h4"] = {'region': 'CORE', 'flavor': 'm1.small'}
 
 # Do not connect two Vxlans to the same switch pairings while running a simple switch controller
 topology = {}

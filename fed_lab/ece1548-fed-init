@@ -1,0 +1,19 @@
+#!/bin/bash -f
+# Create a ssh key if there is no key in the .ssh directory
+# Set an option in a local file
+# Get an option from an INI file
+# iniget config-file section option
+source /home/savitb/bin/functions
+USER="$(whoami)"
+KEY_NAME="$USER"key
+KEY_NAME=`echo $KEY_NAME | sed 's/\.//g'`
+SECGROUP_NAME=$USER
+
+blue_desc_title "  Initializing all settings for ($USER)"
+
+green_desc_title "1. Creating the SAVI-GENI files related to this lab ..."
+cp -r -f /home/savitb/thomas/ws2015/ws15/SAVI_GENI_Tutorial ~
+green_desc "Created directory 'SAVI_GENI_Tutorial' in the home directory ($HOME/SAVI_GENI_Tutorial)"
+
+echo ""
+blue_desc "Initialization completed."
